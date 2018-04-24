@@ -21,7 +21,6 @@ public class Offer {
 //    	char[] cs = {'b', 'c','b', 'b', 'a', 'b', 'a', 'b'};
 //    	char[] p = {'.', '*', 'a', '*', 'a'};
 //    	offer.match(cs, p);
-
     }
 	
 	/*
@@ -834,29 +833,27 @@ public class Offer {
     	return res;
     }
     
-    public int circleSize(ListNode head) {  //判断环有多大
-        int size = 0;
-        ListNode pSlow = head;
-        ListNode pFast = head;
-        boolean hasCircle = false;
-    	while (pSlow != null && pFast.next != null) {
-    		pSlow = pSlow.next;
-    		pFast = pFast.next;
-    		if (pFast.next != null) {
-    			pFast = pFast.next;
-    		}
-    		
-    		if (pFast == pSlow) {
-    			hasCircle = true;
-    			break;
-    		}
-    	}
-    	if (hasCircle) {
-    		
-    	}
-        return size;
+    boolean isSymmetrical(TreeNode pRoot)
+    {
+        if (pRoot == null)
+            return true;
+        return func(pRoot.left, pRoot.right);
     }
-
+    
+    boolean func(TreeNode left, TreeNode right) {
+        if (left == null) {
+            return right == null;
+        }
+        if (right == null)
+            return false;
+        if (left.val != right.val) return false;
+        // 左子树的右子树和右子树的左子树做判断
+        // 右子树的左子树和左子树的右子树做判断
+        return func(left.right, right.left) && func(left.left, right.right);
+    }
+    
+    
+    
     /**
      * 机器人路径，回溯法
      * @return
