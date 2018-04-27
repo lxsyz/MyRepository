@@ -274,14 +274,18 @@ public class LeetCode {
 			return false;
 		
 		if (patternIndex + 1 < pattern.length() && pattern.charAt(patternIndex + 1) == '*') { 
-		
+			
 			if (sIndex < s.length() && (pattern.charAt(patternIndex) == s.charAt(sIndex) || 
-			pattern.charAt(patternIndex) == '.')) {
-				return matchCore(s, sIndex + 1, pattern, patternIndex) ||
-						matchCore(s, sIndex, pattern, patternIndex + 2);
-			}
+			    pattern.charAt(patternIndex) == '.')) {
+                    return matchCore(s, sIndex + 1, pattern, patternIndex) ||
+                            matchCore(s, sIndex, pattern, patternIndex + 2);
+                            // matchCore(s, sIndex + 1, pattern, patternIndex+2);
+			} else {
+                return matchCore(s, sIndex, pattern, patternIndex + 2);
+            }
 		} else {
-			if (sIndex < s.length() && patternIndex < pattern.length()) {
+			if (sIndex < s.length() && patternIndex < pattern.length() && (pattern.charAt(patternIndex) == s.charAt(sIndex) || 
+			pattern.charAt(patternIndex) == '.')) {
 				return matchCore(s, sIndex + 1, pattern, patternIndex + 1);
 			} 
 		}
