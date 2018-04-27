@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class LeetCode {
@@ -5,12 +6,16 @@ public class LeetCode {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 //		ListNode node1 = new ListNode(1);
-//	
+//		ListNode pListNode = new ListNode(5);
+//		node1.next = pListNode;
 //		ListNode node2 = new ListNode(9);
+//		pListNode = node2;
+//		System.out.println(node1.next.val);
 //		node2.next = new ListNode(9);
 		LeetCode leetCode = new LeetCode();
 //		leetCode.addTwoNumbers(node1, node2);
-		leetCode.LongestSub("abcdab");
+//		leetCode.LongestSub("abcdab");
+		System.out.println(leetCode.convert("S", 1));
 	}
 
 	/**
@@ -131,6 +136,158 @@ public class LeetCode {
 		}
 		return Math.max(maxLength, lens);
 	}
+	
+	/**
+	 * 最长公共子串
+	 * 动态规划
+	 * @param s1
+	 * @param s2
+	 * @return
+	 */
+	public ArrayList<String> LCS(String s1, String s2) {
+		int m = s1.length();
+		int n = s2.length();
+		int len = 0;
+//		StringBuilder sb = new StringBuilder();
+//		String res = "";
+		ArrayList<String> list = new ArrayList<>();
+		int[][] L = new int[n + 1][m+1];
+		for (int i = 1;i < n+1;i++) {
+			for (int j = 1;j < m + 1;j++) {
+				if (s1.charAt(j) == s2.charAt(i)) {
+					if (i == 1 || j == 1)
+						L[i][j] = 1;
+					else
+						L[i][j] = L[i-1][j-1] + 1;
+					if (L[i][j] > len) {
+						len = L[i][j];
+						list.clear();
+						list.add(s1.substring(i - len + 1, i + 1));
+					} else if (L[i][j] == len){
+						list.add(s1.substring(i-len + 1, i + 1));
+					}
+				} else {
+					L[i][j] = 0;
+				}
+			}
+		}
+		return list;
+	}
+	
+	/**
+	 * 最大回文子串
+	 * 遍历字符串，计算字符左右字符是否相等
+	 * @param s
+	 * @return
+	 */
+	public String LongestPalindrome(String s) {
+		int start = 0, end = 0;
+		int len = s.length();
+		for (int i = 0;i < len;i++) {
+			int len1 = calcLen(s, i, i);
+			// 考虑abba等情况
+			int len2 = calcLen(s, i, i + 1);
+			int res = Math.max(len1, len2);
+			if (res > end - start) {
+				start = i - (res - 1) / 2;
+				end = start + res - 1;
+			}
+		}
+		return s.substring(start, end + 1);
+	}
+	
+	public int calcLen(String s, int left, int right) {
+		while (left >= 0 && right <= s.length() - 1 && s.charAt(left) == s.charAt(right)) {
+			left--;
+			right++;
+		}
+		return right-left-1;
+	}
+	
+	/**
+	 * 寻找规律 Zigzag conversion
+	 * 第一行：间隔为  nums * 2 - 2
+	 * 之后每一行都有个 interval - 2 * j的数要插入
+	 * @param s
+	 * @param numRows
+	 * @return
+	 */
+	public String convert(String s, int numRows) {
+		if (numRows == 1) {
+			return s;
+		}
+		int interval = numRows * 2 - 2;
+		StringBuilder sb = new StringBuilder();
+		int length = s.length();
+		for (int j = 0;j < numRows;j++) {
+			for (int i = j;i < length;i = i+interval) {
+				if (j == numRows - 1 || j == 0)
+					sb.append(s.charAt(i));
+				else {
+					sb.append(s.charAt(i));
+					int leftInterval = interval - 2 * j;
+					if (i + leftInterval < length)
+						sb.append(s.charAt(i + leftInterval));
+				}
+			}
+		}
+		return sb.toString();
+	}
+	
+	public int reverse(int x) {
+		int result = 0;
+		while (x != 0) {
+			int tail = x % 10;
+			int newResult = result * 10 + tail;
+			// if overflows
+			if ((newResult - tail) / 10 != result)
+				return 0;
+			result = newResult;
+			x = x / 10;
+		}
+		return result;
+	}
+	
+	public boolean isMatch(String s, String pattern) {
+		if (s == null || pattern == null)
+			return false;
+		
+		return matchCore(s, 0, pattern, 0);
+	}
+	/**
+	 * 1. 模式先到尾部，匹配失败,两个都到达尾部，匹配成功
+	 * 2. 第一种情况，字符相匹配，且模式后者为 '*'， 分两种情况递归：
+	 * （1） 字符串加1，模式不变，表示模式匹配到了字符
+	 * （2）字符串不变，模式加2. 表示模式匹配到了0个字符
+	 * 3. 第二种情况，字符不相匹配或者字符串读到了结尾，且模式后者为'*'
+	 *   则模式加2，递归
+	 * 4. 第三种情况，字符相匹配且模式后一字符不为'*'，
+	 *   则模式加1，字符加1
+	 * 5. 其余情况下返回false;
+	 * 
+	 * @return
+	 */
+	public boolean matchCore(String s, int sIndex, String pattern, int patternIndex) {
+		if (sIndex == s.length() - 1 && patternIndex == pattern.length() - 1) 
+			return true;
+		if (sIndex != s.length() - 1 && patternIndex == pattern.length() - 1)
+			return false;
+		
+		if (patternIndex + 1 < pattern.length() && pattern.charAt(patternIndex + 1) == '*') { 
+		
+			if (sIndex < s.length() && (pattern.charAt(patternIndex) == s.charAt(sIndex) || 
+			pattern.charAt(patternIndex) == '.')) {
+				return matchCore(s, sIndex + 1, pattern, patternIndex) ||
+						matchCore(s, sIndex, pattern, patternIndex + 2);
+			}
+		} else {
+			if (sIndex < s.length() && patternIndex < pattern.length()) {
+				return matchCore(s, sIndex + 1, pattern, patternIndex + 1);
+			} 
+		}
+		return false;
+	}
+	
 	
 	/**
 	 * 拓展: 最长的不重复子串
