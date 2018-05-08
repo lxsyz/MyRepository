@@ -1,5 +1,11 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import javax.xml.soap.Node;
 
 public class LeetCode {
 
@@ -15,7 +21,7 @@ public class LeetCode {
 		LeetCode leetCode = new LeetCode();
 //		leetCode.addTwoNumbers(node1, node2);
 //		leetCode.LongestSub("abcdab");
-		System.out.println(leetCode.convert("S", 1));
+		System.out.println(leetCode.letterCombination("23451"));
 	}
 
 	/**
@@ -256,9 +262,10 @@ public class LeetCode {
 	}
 	/**
 	 * 1. 模式先到尾部，匹配失败,两个都到达尾部，匹配成功
-	 * 2. 第一种情况，字符相匹配，且模式后者为 '*'， 分两种情况递归：
+	 * 2. 第一种情况，字符相匹配，且模式后者为 '*'， 分三种情况递归：
 	 * （1） 字符串加1，模式不变，表示模式匹配到了字符
-	 * （2）字符串不变，模式加2. 表示模式匹配到了0个字符
+	 * （2） 当字符串走到了末尾，模式还没有走到，回溯，模式做加2操作 
+	 * （3）字符串不变，模式加2. 表示模式匹配到了0个字符
 	 * 3. 第二种情况，字符不相匹配或者字符串读到了结尾，且模式后者为'*'
 	 *   则模式加2，递归
 	 * 4. 第三种情况，字符相匹配且模式后一字符不为'*'，
@@ -279,7 +286,6 @@ public class LeetCode {
 			    pattern.charAt(patternIndex) == '.')) {
                     return matchCore(s, sIndex + 1, pattern, patternIndex) ||
                             matchCore(s, sIndex, pattern, patternIndex + 2);
-                            // matchCore(s, sIndex + 1, pattern, patternIndex+2);
 			} else {
                 return matchCore(s, sIndex, pattern, patternIndex + 2);
             }
@@ -292,6 +298,336 @@ public class LeetCode {
 		return false;
 	}
 	
+	/**
+	 * 水的最大面积
+	 * 假设height[m]与height[n]间值最大，那么m的左边不存在更大的值，n的右边也不会存在更大的值
+	 * 
+	 * @param height
+	 * @return
+	 */
+	public int maxArea(int[] height) {
+		int length = height.length;
+		int area = 0;
+		int left = 0;
+		int right = length - 1;
+		int maxarea = 0;
+		while (left != right) {
+			if (height[left] < height[right]) {
+				area = (right - left) * height[left];
+				left++;
+			} else {
+				area = (right - left) * height[right];
+				right--;
+			}
+			maxarea = Math.max(area, maxarea);
+		}
+		
+		
+		return maxarea;
+	}
+	
+	/**
+	 * Symbol       Value
+		I             1
+		V             5
+		X             10
+		L             50
+		C             100
+		D             500
+		M             1000
+		易理解的暴力法，可AC
+	 * @param num
+	 * @return
+	 */
+	public String intToRoman(int num) {
+		HashMap<Integer, String> map = new HashMap<>();
+		map.put(1, "I");
+		map.put(4, "IV");
+		map.put(5, "V");
+		map.put(9, "IX");
+		map.put(10, "X");
+		map.put(40, "XL");
+		map.put(90, "XC");
+		map.put(50, "L");
+		map.put(100, "C");
+		map.put(400, "CD");
+		map.put(500, "D");
+		map.put(900, "CM");
+		map.put(1000, "M");
+		int digit = 1;
+		int digit5 = 5;
+		int digit4 = 4;
+		int digit9 = 9;
+		String result = "";
+		
+		while (num != 0) {
+            int number = 0;
+			String temp = "";
+			int tail = num % 10;
+			while (tail < 4 && number < tail) {
+				temp = temp + map.get(digit); 
+				number++;
+			}
+			if (tail > 4 && tail < 9) {
+                temp = temp + map.get(digit5);
+                while (number < tail - 5) {
+				    temp = temp + map.get(digit);
+				    number++;
+                }
+			}
+			if (tail == 4) {
+				temp = temp + map.get(digit4);
+			} else if (tail == 9) {
+				temp = temp + map.get(digit9); 
+			}
+			result = temp + result;
+			num = num / 10;
+			digit *= 10;
+			digit5 *= 10;
+			digit4 *= 10;
+			digit9 *= 10;
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * 简单的方法
+	 * @param num
+	 * @return
+	 */
+	public String intToRoman2(int num) {
+		String[] roman = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V","IV", "I"};
+        int[] nums = {1000, 900, 500, 400,  100,  90,   50,  40,  10,  9,   5 , 4, 1};
+        StringBuilder sb = new StringBuilder();
+        // 从首位往个位做
+        for (int i = 0;i < nums.length;i++) {
+        	int count = num / nums[i];
+        	while (count > 0) {
+        		sb.append(roman[i]);
+        		count--;
+        	}
+        	// 去掉已经做过的首位
+        	num = num % nums[i];
+        }
+        String string = "sad";
+        return sb.toString();
+	}
+	
+	/**
+	 * 常规解法
+	 * 1. 先找到最短的那个字符串
+	 * 2. 遍历，逐个比较字符,更新最短的字符串
+	 * 好的解法：
+	 * 1. 外层循环，遍历字符串字符  for i ; size()>0;i++
+	 * 2. 内层循环，遍历所有字符串，后面的字符串与前面的字符串比较单个字符      strs[j][i] != strs[j-1][i]
+	 *    如果字符符合条件，添加到prefix中， prefix += strs[0][i]
+	 *    直到i > strs[j].size()大于其中某个字符串长度。
+	 * @param strs
+	 * @return
+	 */
+	public String longestCommonPrefix(String[] strs) {
+		String shortest = strs[0];
+		int length = strs[0].length();
+		for (int i = 0;i < strs.length;i++) {
+			if (strs[i].length() < length) {
+				length = strs[i].length();
+				shortest = strs[i];
+			}
+		}
+		String res = shortest;
+		for (int i = 0;i < strs.length;i++) {
+			String temp = "";
+			for (int j = 0;j < res.length();j++) {
+				if (res.charAt(j) == strs[i].charAt(j)) {
+					temp += res.charAt(j);
+				} else
+					break;
+			}
+			res = temp;
+		}
+		
+		return res;
+	}
+	
+	/**
+	 * 先排序，然后左右各一个指针移动
+	 * @param nums
+	 * @return
+	 */
+	public List<List<Integer>> threeSum(int[] nums) {
+        List<List<Integer>> res = new ArrayList<>();
+        if (nums.length < 3)
+            return res;
+        Arrays.sort(nums);
+        
+        for (int i = 0;i < nums.length-2;i++) {
+            if (i > 0 && nums[i] == nums[i-1]) {
+                continue;
+            }
+            int left = i + 1;
+            int right = nums.length - 1;
+            
+            while (left < right) {
+                if (nums[i] + nums[left] + nums[right] > 0) {
+                    right--;
+                    while (nums[right] == nums[right + 1] && left < right) right--;
+                } else if (nums[i] + nums[left] + nums[right] < 0) {
+                    left++;
+                    while (nums[left] == nums[left - 1] && left < right) left++;
+                } else {
+                    res.add(Arrays.asList(nums[left], nums[right], nums[i]));
+                    ++left;
+                    --right;
+                    while (nums[right] == nums[right+1] && left < right) right--;
+                    while (nums[left] == nums[left-1] && left < right) left++;
+                }
+            }
+            
+        }
+        
+        return res;
+    }
+	
+	/**
+	 * 三数之和与目标值最近
+	 * @param nums
+	 * @param target
+	 * @return
+	 */
+	public int threeSumClosest(int[] nums, int target) {
+        if (nums.length < 3) return 0;
+        Arrays.sort(nums);
+        int interval = Integer.MAX_VALUE;
+        int result = 0;
+        // 遍历目标值，定义left和right两个指针
+        // 左右夹逼
+        for (int i = 0;i < nums.length;i++) {
+            if (i > 0 && nums[i] == nums[i-1]) continue;
+            
+            int left = i + 1;
+            int right = nums.length - 1;
+            
+            while (left < right) {
+            	// 计算和与目标值之间的距离
+                int temp = nums[i] + nums[left] + nums[right];
+                if (temp == target) {
+                    result = temp;
+                    break;
+                }
+                int gap =Math.abs(temp - target);
+                
+                if (gap < interval) {
+                    result = temp;
+                    interval = gap;
+                } 
+                if (temp > target) {
+                    right--;
+                    while (nums[right] == nums[right + 1] && left < right) right--;
+                } else {
+                    left++;
+                    while (nums[left] == nums[left - 1] && left < right) left++;
+                }
+            }
+        }
+        return result;
+    }
+	
+	/**
+	 * 双队列结构
+	 * 1. 终止条件，当队首节点值与字符串的值不相等的时候
+	 * 2. 移除队首节点，初始化为对应数字代表的字符串，依次插入队尾，如‘a’->'b'->'c'
+	 * 3. 取出队首节点，与后一位数字代表的字符串依次连接，如'ad'->'ae'->'af',插入到队尾
+	 * 4. 重复该过程，知道队首字符串长度与digits相等
+	 * @param digits
+	 * @return
+	 */
+	public List<String> letterCombination(String digits) {
+		LinkedList<String> ans = new LinkedList<String>();
+		if(digits.isEmpty()) return ans;
+		String[] mapping = new String[] {"0", "1", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"};
+		ans.add("");
+		while(ans.peek().length()!=digits.length()){
+			String remove = ans.remove();
+			String map = mapping[digits.charAt(remove.length())-'0'];
+			for(char c: map.toCharArray()){
+				ans.addLast(remove+c);
+			}
+		}
+		return ans;
+	}
+	
+	public List<List<Integer>> fourSum(int[] nums, int target) {
+		ArrayList<List<Integer>> res = new ArrayList<>();
+		int len = nums.length;
+		if (nums == null || len < 4) {
+			return res;
+		}
+		
+		Arrays.sort(nums);
+		int max = nums[len - 1];
+		if (4 * nums[0] > target || 4 * max < target) 
+			return res;
+		int i, z;
+		for (i = 0;i < len;i++) {
+			z = nums[i];
+			if (i > 0 && z == nums[i - 1])
+				continue;
+			if (z + 3 * max < target) //z太小
+				continue;
+			if (4 * z > target)		// z太大
+				break;
+			if (4 * z == target) {
+				if (i + 3 < len && nums[i+3] == z)
+					res.add(Arrays.asList(z,z,z,z));
+				break;
+			}
+			
+			for (int j = i + 1;j < len-1;j++) {
+				if (j > 0 && nums[j] == nums[j - 1])
+					continue;
+				int left = j + 1;
+				int right = len - 2;
+				while (left < right) {
+					int sum = nums[i] + nums[j] + nums[left] + nums[right];
+					if (sum < target) {
+						left++;
+						while (nums[left] == nums[left-1]) left++;
+					} else if (sum > target) {
+						right--;
+						while (nums[right] == nums[right+1]) right--;
+					} else {
+						res.add(Arrays.asList(nums[i], nums[j], nums[left], nums[right]));
+						// 跳过重复值，不加会超时
+						++left;
+	                    --right;
+	                    while (nums[right] == nums[right+1] && left < right) right--;
+	                    while (nums[left] == nums[left-1] && left < right) left++;
+					}
+				}
+			}
+			
+		}
+		return res;
+	}
+
+	
+	
+	public ListNode deleteX(ListNode head, int x) {
+		List<List<Integer>> res = new ArrayList<>();
+		if (head == null) return null;
+		// 当一开始有一些x的节点
+		
+		ListNode q;
+		if (head.val == x) {
+			head = head.next;
+			return deleteX(head, x);
+		} else {
+			head.next = deleteX(head.next, x);
+		}
+		
+		return head;
+	}
 	
 	/**
 	 * 拓展: 最长的不重复子串
