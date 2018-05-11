@@ -11,17 +11,19 @@ public class LeetCode {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-//		ListNode node1 = new ListNode(1);
-//		ListNode pListNode = new ListNode(5);
-//		node1.next = pListNode;
-//		ListNode node2 = new ListNode(9);
-//		pListNode = node2;
+		ListNode node1 = new ListNode(1);
+		ListNode pListNode = new ListNode(5);
+		node1.next = pListNode;
+		ListNode node2 = new ListNode(9);
+		pListNode.next = node2;
+		node2.next = new ListNode(2);
+		node2.next.next = new ListNode(3);
 //		System.out.println(node1.next.val);
 //		node2.next = new ListNode(9);
 		LeetCode leetCode = new LeetCode();
 //		leetCode.addTwoNumbers(node1, node2);
 //		leetCode.LongestSub("abcdab");
-		System.out.println(leetCode.letterCombination("23451"));
+//		System.out.println(leetCode.letterCombination("23451"));
 	}
 
 	/**
@@ -635,7 +637,6 @@ public class LeetCode {
 	 * @param s
 	 */
 	public void LongestSub(String s) {
-//		int i, j;
 		HashMap<Character, Integer> map = new HashMap<>();
 		char[] arr = s.toCharArray();
 		int maxLength = 0;
@@ -715,6 +716,251 @@ public class LeetCode {
 		}
 		return 0.0;
 	}
+	
+	/**
+	 * 删除倒数第n个节点
+	 * @param head
+	 * @param n
+	 * @return
+	 */
+	public ListNode removeNthFromEnd(ListNode head, int n) {
+		if (head == null)
+			return null;
+		ListNode start = head;
+		ListNode deleted = head;
+        ListNode prev = null;
+		for (int i = 0;i < n;i++) {
+			if (start == null) break;
+			start = start.next;
+			// else {
+			// 	if (i < n - 1)
+			// 		return head;
+			// 	break;
+			// }
+		}
+		while (start != null) {
+            prev = deleted;
+			deleted = deleted.next;
+			start = start.next;
+		}
+		// 头结点
+		if (deleted == head) {
+			head = head.next;
+		} else if (deleted.next == null) {
+			// 尾节点
+            prev.next = null;
+			deleted = null;
+		} else {
+			// 中间节点
+			ListNode p = deleted.next;
+			deleted.val = p.val;
+			deleted.next = p.next;
+			p = null;
+		}
+		return head;
+	}
+	
+	/**
+	 * 回溯法生成括号
+	 * 用两个变量记录已使用的左括号和右括号的数目
+	 * 字符串结果每使用一次右括号，右括号数目减1
+	 * 没使用一次左括号，左括号数目减1，右括号数目加1
+	 * 二者均为0时，添加到结果中，return
+	 * @author Administrator
+	 *
+	 */
+	public List<String> generateParenthesis(int n) {
+		List<String> res = new LinkedList<>();
+		addPar(res, "", n, 0);
+		return res;
+	}
+	
+	public void addPar(List<String> res, String str, int n, int m) {
+		if (n == 0 && m == 0) {
+			res.add(str);
+			return;
+		}
+		if (m > 0) {
+			addPar(res, str + ')', n, m - 1);
+		}
+		if (n > 0) {
+			addPar(res, str + '(', n - 1, m + 1);
+		}
+	}
+	
+	/**
+	 * 
+	 * @param lists
+	 * @return
+	 */
+	public ListNode mergeKLists(ListNode[] lists) {
+		if (lists.length == 0) {
+			return null;
+		}
+		return merge(0, lists.length - 1, lists);
+	}
+	
+	public ListNode merge(int start, int end, ListNode[] lists) {
+		if (end < start) return null;
+		if (start == end) return lists[start];
+		int mid = (start + end) / 2;
+		ListNode l = merge(start, mid, lists);
+		ListNode r = merge(mid + 1, end, lists);
+		ListNode dummy = new ListNode(0);
+		ListNode runner = dummy;
+		
+		while (l != null && r != null) {
+			if (l.val > r.val) {
+				runner.next = r;
+				r = r.next;
+				runner = runner.next;
+			} else {
+				runner.next = l;
+				l = l.next;
+				runner = runner.next;
+			}
+		}
+		if (l == null && r==null) {
+			return dummy.next;
+		}
+		runner.next = l == null?r : l;
+		return dummy.next;
+	}
+	/**
+	 * 
+	 * @param head
+	 * @return
+	 */
+	public ListNode swapPairs(ListNode head) {
+        if (head == null || head.next == null)
+            return head;
+        ListNode dummy = new ListNode(-1);
+        
+        int n =1;
+        ListNode prev = head;
+        ListNode cur = head;
+        dummy.next = cur;
+        ListNode res = dummy;
+        while (cur != null) {
+            if (n != 2) {
+                prev = cur;
+                cur = cur.next;
+                n++;
+            } else {
+                ListNode d = reverse(prev, cur);
+                res.next = cur;
+                cur = prev.next;
+                res = prev;
+                n = 1;
+            }
+        }
+        
+        return dummy.next;
+    }
+    
+    public ListNode reverse(ListNode l1, ListNode l2) {
+        if (l1 != null && l2 != null) {
+            ListNode temp = l2.next;
+            l2.next = l1;
+            l1.next = temp;
+            l1 = l2;
+            l2 = temp;
+        }
+        return l1;
+    }
+	
+	/*
+	 * 递归版本的
+	 * 
+	 */
+	public ListNode reverseKGroups(ListNode head, int k) {
+//		ListNode curr = head;
+//		int count = 0;
+//		// 找到第k+1个节点
+//		while (count != k && curr != null) {
+//			count++;
+//			curr = curr.next;
+//		}
+//		// 第k个节点
+//		if (count == k) {
+//			// 翻转第k组
+//			ListNode t = reverseKGroups(curr, k);
+//			// 翻转的代码
+//			//  a->b->c->d
+//			while (count > 0) {
+//				ListNode temp = head.next;	
+//				head.next = t;	// a->d, b->a, c->b最后  c->b->a->d
+//				t = head;		
+//				head = temp;	
+//				count--;
+//			}
+//			head = t;
+//		}
+//		
+//		return head;
+		
+		// 非递归形式
+		/*
+		 * Dummy -> 1 -> 2 -> 3 -> 4 -> 5
+   			  p     c         n
+         		  start
+		   Dummy -> 2 -> 3 -> 1 -> 4 -> 5
+   			  p     c    n    start
+		   Dummy -> 3 -> 2 -> 1 -> 4 -> 5
+   			  p     c         start
+         			n
+		 */
+		ListNode dummy = new ListNode(0), start = dummy;
+        dummy.next = head;
+        while(true) {
+            ListNode p = start, c, n = p;
+            start = p.next;
+            for(int i = 0; i < k && n != null; i++) n = n.next;
+            if(n == null) break;
+            for(int i = 0; i < k-1; i++) {
+                c = p.next;
+                p.next = c.next;
+                c.next = n.next;
+                n.next = c;
+            }
+        }
+        return dummy.next;
+	}
+	
+	/**
+	 * l中字符长度都一样
+	 * @param s
+	 * @param l
+	 * @return
+	 */
+	public List<Integer> findSubstring(String s, String[] l) {
+		List<Integer> res = new ArrayList<>();
+		if (s == null || l == null || l.length == 0) return res;
+		int len = l[0].length();
+		Map<String, Integer> map = new HashMap<>();
+		
+		for (String w:l) {
+			map.put(w, map.containsKey(w) ? map.get(w) +1:1);
+		}
+		
+		for (int i = 0;i <= s.length() - len * l.length;i++) {
+			Map<String, Integer> copy = new HashMap<>(map);
+			for (int j = 0;j < l.length;j++) {
+				String str = s.substring(i + j * len, i + j * len + len);
+				if (copy.containsKey(str)) {
+					int count = copy.get(str);
+					if (count == 1) copy.remove(str);
+					else copy.put(str, count-1);
+					if (copy.isEmpty()) {
+						res.add(i);
+						break;
+					}
+				} else break;
+			}
+		}
+		return res;
+	}
+	
 	
 	private static class ListNode {
     	int val;
